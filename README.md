@@ -38,3 +38,5 @@ q.addUInt("score", 1337'u)
 echo q
 # Output: name=John%20Smith&age=35&height=1.750000&score=1337
 ```
+
+See the [documentation](https://amanoteam.github.io/httpquery/docs/httpquery.html) for more info.
