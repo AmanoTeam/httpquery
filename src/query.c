@@ -98,7 +98,7 @@ hquery_param_t* query_get_item(
 ) {
 	
 	hquery_param_t* parameter = NULL;
-	printf("%i\n", query->offset);
+	
 	if (index >= query->offset) {
 		return parameter;
 	}
