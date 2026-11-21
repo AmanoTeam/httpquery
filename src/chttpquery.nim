@@ -3,7 +3,6 @@
 import std/os
 
 {.passC: "-I" & parentDir(currentSourcePath).}
-{.compile: "hex.c".}
 {.compile: "strsplit.c".}
 {.compile: "urldecode.c".}
 {.compile: "urlencode.c".}
@@ -15,8 +14,12 @@ const HTTPQUERY_ERROR*: cint = -1
 
 let
 	BIGINT_MAX* {.importc: "BIGINT_MAX", header: "biggestint.h", nodecl.}: BiggestInt
-	BIGUINT_MAX* {.importc: "BIGINT_MAX", header: "biggestint.h", nodecl.}: BiggestUInt
+	BIGUINT_MAX* {.importc: "BIGUINT_MAX", header: "biggestint.h", nodecl.}: BiggestUInt
 	BIGFLOAT_MAX* {.importc: "BIGFLOAT_MAX", header: "biggestint.h", nodecl.}: BiggestFloat
+	HQUERY_OPT_URL_ENCODE* {.importc: "HQUERY_OPT_URL_ENCODE", header: "query.h", nodecl.}: cint
+	HQUERY_OPT_URL_DECODE* {.importc: "HQUERY_OPT_URL_DECODE", header: "query.h", nodecl.}: cint
+	HQUERY_OPT_IGNORE_CASE* {.importc: "HQUERY_OPT_IGNORE_CASE", header: "query.h", nodecl.}: cint
+	HQUERY_OPT_DUPLICATES* {.importc: "HQUERY_OPT_DUPLICATES", header: "query.h", nodecl.}: cint
 
 type
 	bigint_t* {.importc: "bigint_t", header: "biggestint.h", nodecl, final.} = BiggestInt
@@ -34,6 +37,7 @@ type
 		options*: cint
 
 func query_add_string*(query: ptr http_query_t, key: cstring, value: cstring): cint {.cdecl, header: "query.h", importc: "query_add_string".}
+func query_add_buffer*(query: ptr http_query_t, key: cstring, key_size: csize_t, value: cstring, value_size: csize_t): cint {.cdecl, header: "query.h", importc: "query_add_buffer".}
 func query_add_int*(query: ptr http_query_t, key: cstring, value: bigint_t): cint {.cdecl, header: "query.h", importc: "query_add_int".}
 func query_add_uint*(query: ptr http_query_t, key: cstring, value: biguint_t): cint {.cdecl, header: "query.h", importc: "query_add_uint".}
 func query_add_float*(query: ptr http_query_t, key: cstring, value: bigfloat_t): cint {.cdecl, header: "query.h", importc: "query_add_float".}
@@ -60,6 +64,7 @@ func query_free*(query: ptr http_query_t): void {.cdecl, header: "query.h", impo
 
 func query_load_string*(query: ptr http_query_t, str: cstring): cint {.cdecl, header: "query.h", importc: "query_load_string".}
 func query_load_file*(query: ptr http_query_t, filename: cstring): cint {.cdecl, header: "query.h", importc: "query_load_file".}
+func query_load_environ*(query: ptr http_query_t): cint {.cdecl, header: "query.h", importc: "query_load_environ".}
 
 func param_free*(param: ptr hquery_param_t): void {.cdecl, header: "query.h", importc: "param_free".}
 

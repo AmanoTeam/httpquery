@@ -10,14 +10,14 @@ Install using `nimble`:
 nimble install --accept httpquery
 ```
 
-## Usage:
+## Usage
 
 Parse an arbitrary query string:
 
 ```nim
 import httpquery
 
-let q = newHttpQuery()
+var q = newHttpQuery()
 q.parseString("key=value&anotherkey=anothervalue")
 
 assert q.getString("key") == "value"
@@ -29,7 +29,7 @@ Dynamically create query strings:
 ```nim
 import httpquery
 
-let q = newHttpQuery()
+var q = newHttpQuery()
 q.addString("name", "John Smith")
 q.addInt("age", 35)
 q.addFloat("height", 1.75)

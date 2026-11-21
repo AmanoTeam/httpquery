@@ -22,8 +22,33 @@ proc newHttpQuery*(sep: char = '&', subsep: string = "="): httpQuery =
 	
 	query_init(query = addr result.data, sep = sep, subsep = cstring(subsep))
 
+proc setIgnoreCase*(query: var httpQuery, enabled: bool = true): void =
+	## Enables or disables case-insensitive key lookups.
+	## 
+	## When enabled, lookups and `add*` procedures match keys without regard to
+	## case. The original key casing is preserved.
+	
+	if enabled:
+		query.data.options = query.data.options or HQUERY_OPT_IGNORE_CASE
+	else:
+		query.data.options = query.data.options and not HQUERY_OPT_IGNORE_CASE
+
+proc setDuplicates*(query: var httpQuery, enabled: bool = true): void =
+	## Enables or disables duplicate keys.
+	## 
+	## When enabled, adding a key that already exists appends a new parameter
+	## instead of replacing the existing value. Lookups return the first match.
+	
+	if enabled:
+		query.data.options = query.data.options or HQUERY_OPT_DUPLICATES
+	else:
+		query.data.options = query.data.options and not HQUERY_OPT_DUPLICATES
+
 proc addString*(query: httpQuery, key: string, value: string): void =
 	## Adds a string key-value pair to the query.
+	## 
+	## By default, an existing key has its value replaced. Enable
+	## `setDuplicates` to append a new parameter instead.
 	
 	let status: cint = query_add_string(
 		query = addr query.data,
@@ -87,6 +112,8 @@ proc getString*(query: httpQuery, key: string, decode: bool = true): string =
 	## Retrieves a string value by key from the query.
 	## 
 	## - If `decode` is `true` (default), the value is URL-decoded.
+	## - With duplicate keys, the first match is returned.
+	## - Key matching follows `setIgnoreCase`.
 	
 	var value: cstring = query_get_string(
 		query = addr query.data,
@@ -235,6 +262,8 @@ proc getBool*(param: httpParam, key: string): bool =
 
 proc parseString*(query: httpQuery, str: string): void =
 	## Parses a query string (e.g. `"key1=value1&key2=value2"`) into the `httpQuery` object.
+	## 
+	## Duplicate keys in the input are preserved.
 	
 	let status: cint = query_load_string(
 		query = addr query.data,
@@ -255,6 +284,17 @@ proc parseFile*(query: httpQuery, filename: string): void =
 	if status != HTTPQUERY_SUCCESS:
 		raise (ref HTTPQueryParseException)(msg: "Parse error")
 
+proc loadEnviron*(query: httpQuery): void =
+	## Loads the process environment into the query.
+	## 
+	## Environment variable names are case-sensitive. This resets the query
+	## and its options before loading.
+	
+	let status: cint = query_load_environ(query = addr query.data)
+	
+	if status != HTTPQUERY_SUCCESS:
+		raise (ref HTTPQueryParseException)(msg: "Environment load error")
+
 proc dumpString*(query: httpQuery): string =
 	## Serializes the query back into a query string (e.g. `"key1=value1&..."`).
 	## The returned string is properly encoded.
@@ -274,6 +314,8 @@ proc dumpString*(query: httpQuery): string =
 
 proc clear*(query: httpQuery): void =
 	## Clears all parameters from the query and frees internal memory.
+	## 
+	## This also resets the query options.
 	query_free(query = addr query.data)
 
 proc `$`*(query: httpQuery): string =
